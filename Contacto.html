@@ -35,7 +35,8 @@
             </div>
 
             <!-- Formulario con validación -->
-            <form id="formularioContacto" class="contacto-form"  method="POST" novalidate>
+            <form id="formularioContacto" class="contacto-form"  action="https://formspree.io/f/xeeekedn"
+  method="POST">
                 
                 <div class="form-group">
                     <label for="nombre" class="form-label">
@@ -241,7 +242,7 @@
     }
     
     // Envío del formulario a Formspree
-    const FORMSPREE_ENDPOINT = 'https://formspree.io/f/xkoobger';
+    const FORMSPREE_ENDPOINT = 'https://formspree.io/f/xeeekedn';
     
     formulario.addEventListener('submit', async function(e) {
         e.preventDefault();
