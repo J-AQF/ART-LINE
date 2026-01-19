@@ -1,6 +1,4 @@
-/* ============================================
-ESTILOS ESPECÍFICOS PARA PÁGINA DE CONTACTO
-============================================ */
+
 
 /* Contenedor principal */
 .contacto-container {
@@ -258,71 +256,7 @@ ESTILOS ESPECÍFICOS PARA PÁGINA DE CONTACTO
     line-height: 1.4;
 }
 
-/* FOOTER del sitio */
-.site-footer {
-    background: var(--color-dark);
-    color: var(--color-light-1);
-    padding: 30px 20px;
-    margin-top: 50px;
-    border-top: 2px solid var(--color-secondary);
-}
 
-.footer-content {
-    max-width: 1200px;
-    margin: 0 auto;
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 30px;
-}
-
-.footer-logo .footer-title {
-    color: var(--color-accent);
-    font-family: var(--font-pixel);
-    font-size: 1.5rem;
-    margin-bottom: 10px;
-}
-
-.footer-text {
-    font-size: 0.9rem;
-    line-height: 1.5;
-    opacity: 0.8;
-}
-
-.footer-subtitle {
-    color: var(--color-light);
-    font-size: 1.1rem;
-    margin-bottom: 15px;
-    font-family: var(--font-main);
-}
-
-.footer-list {
-    list-style: none;
-    padding: 0;
-}
-
-.footer-list li {
-    margin-bottom: 8px;
-}
-
-.footer-link {
-    color: var(--color-light-1);
-    text-decoration: none;
-    transition: color 0.3s ease;
-}
-
-.footer-link:hover,
-.footer-link.active {
-    color: var(--color-accent);
-    border-bottom: 1px solid var(--color-accent);
-}
-
-.footer-credits {
-    grid-column: 1 / -1;
-    text-align: center;
-    margin-top: 20px;
-    padding-top: 20px;
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
-}
 
 /* Responsive */
 @media (max-width: 768px) {
