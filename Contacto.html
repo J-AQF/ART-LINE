@@ -34,8 +34,8 @@
                 <p class="Text">¿Tienes preguntas, sugerencias o quieres compartir tu arte? Escríbenos.</p>
             </div>
 
-            <!-- Formulario con validación HTML5 -->
-            <form id="formularioContacto" class="contacto-form" action="https://formspree.io/projects/2917873785547783910/settings" method="POST" novalidate>
+            <!-- Formulario con validación -->
+            <form id="formularioContacto" class="contacto-form"  method="POST" novalidate>
                 
                 <div class="form-group">
                     <label for="nombre" class="form-label">
@@ -202,7 +202,11 @@
     </footer>
 
     <script>
-
+        const response = await fetch('https://formspree.io/projects/2917873785547783910/settings', {
+        method: 'POST',
+        body: formData,
+        headers: { 'Accept': 'application/json' }
+        });
         const mensajeTextarea = document.getElementById('mensaje');
         const contador = document.getElementById('contador');
         
