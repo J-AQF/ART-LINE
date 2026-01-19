@@ -287,14 +287,14 @@
     }
 }
 
-/* Mensajes de error del navegador - Personalización básica */
+/* Mensajes de error del navegador */
 input:invalid,
 select:invalid,
 textarea:invalid {
-    /* El navegador mostrará su propio mensaje, pero podemos cambiar el estilo */
+    
 }
 
-/* Para navegadores WebKit (Chrome, Safari) */
+/* Para navegadores WebKit */
 input:invalid::-webkit-input-placeholder,
 textarea:invalid::-webkit-input-placeholder {
     color: rgba(255, 107, 107, 0.7);
