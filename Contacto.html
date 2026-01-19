@@ -230,13 +230,28 @@
     const formulario = document.getElementById('formularioContacto');
     if (formulario) {
         formulario.addEventListener('invalid', function(e) {
+            e.preventDefault(); // Prevenir mensajes nativos
             e.target.classList.add('invalid');
+            
+            // Mostrar mensaje personalizado
+            if (!e.target.nextElementSibling || !e.target.nextElementSibling.classList.contains('error-message')) {
+                const errorMsg = document.createElement('div');
+                errorMsg.className = 'error-message';
+                errorMsg.textContent = 'Por favor, corrige este campo';
+                errorMsg.style.color = '#ff6b6b';
+                errorMsg.style.fontSize = '0.8em';
+                errorMsg.style.marginTop = '5px';
+                e.target.parentNode.appendChild(errorMsg);
+            }
         }, true);
         
         formulario.addEventListener('input', function(e) {
             // Remover clase invalid cuando el usuario empiece a escribir
             if (e.target.classList.contains('invalid')) {
                 e.target.classList.remove('invalid');
+                // Remover mensaje de error
+                const errorMsg = e.target.parentNode.querySelector('.error-message');
+                if (errorMsg) errorMsg.remove();
             }
         });
     }
@@ -247,49 +262,153 @@
     formulario.addEventListener('submit', async function(e) {
         e.preventDefault();
         
+        // Validación manual
         if (!this.checkValidity()) {
-            // Mostrar mensajes de validación nativos del navegador
-            this.reportValidity();  
+            // Recorrer campos inválidos
+            const invalidFields = this.querySelectorAll(':invalid');
+            invalidFields.forEach(field => {
+                field.classList.add('invalid');
+                // Mostrar mensaje de error
+                if (!field.nextElementSibling || !field.nextElementSibling.classList.contains('error-message')) {
+                    const errorMsg = document.createElement('div');
+                    errorMsg.className = 'error-message';
+                    
+                    if (field.validity.valueMissing) {
+                        errorMsg.textContent = 'Este campo es obligatorio';
+                    } else if (field.validity.typeMismatch) {
+                        errorMsg.textContent = 'Por favor, introduce un valor válido';
+                    } else if (field.validity.tooShort) {
+                        errorMsg.textContent = `Mínimo ${field.minLength} caracteres`;
+                    }
+                    
+                    errorMsg.style.color = '#ff6b6b';
+                    errorMsg.style.fontSize = '0.8em';
+                    errorMsg.style.marginTop = '5px';
+                    field.parentNode.appendChild(errorMsg);
+                }
+            });
+            
+            // Enfocar el primer campo inválido
+            if (invalidFields.length > 0) {
+                invalidFields[0].focus();
+            }
+            
             return;
         }
         
         // Mostrar estado de carga
         const submitBtn = this.querySelector('.submit-button');
         const originalText = submitBtn.textContent;
-        submitBtn.textContent = 'Enviando...';
+        const originalHTML = submitBtn.innerHTML;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enviando...';
         submitBtn.disabled = true;
         
+        console.log('Enviando datos a Formspree...');
+        
         try {
+            const formData = new FormData(this);
+            console.log('Datos del formulario:', Object.fromEntries(formData));
+            
             const response = await fetch(FORMSPREE_ENDPOINT, {
                 method: 'POST',
-                body: new FormData(this),
-                headers: { 'Accept': 'application/json' }
+                body: formData,
+                headers: { 
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                }
             });
             
-            const data = await response.json();
-            console.log('Respuesta de Formspree:', data);
+            console.log('Respuesta HTTP:', response.status, response.statusText);
+            
+            let data;
+            try {
+                data = await response.json();
+                console.log('Datos de respuesta:', data);
+            } catch (parseError) {
+                console.error('Error parseando JSON:', parseError);
+                const text = await response.text();
+                console.log('Respuesta en texto:', text);
+                data = { error: 'Respuesta inesperada del servidor' };
+            }
             
             if (response.ok) {
-                alert('✅ ¡Mensaje enviado! Revisa tu email para confirmar.');
+                // Mostrar mensaje de éxito más atractivo
+                const successHTML = `
+                    <div class="success-message" style="
+                        background: #d4edda;
+                        color: #155724;
+                        padding: 15px;
+                        border-radius: 8px;
+                        margin: 20px 0;
+                        border: 1px solid #c3e6cb;
+                        text-align: center;
+                    ">
+                        <h3 style="margin-top: 0; color: #155724;">
+                            <i class="fas fa-check-circle"></i> ¡Mensaje enviado con éxito!
+                        </h3>
+                        <p>Te responderemos en 24-48 horas hábiles.</p>
+                        <p><small>Revisa tu email para confirmar el envío.</small></p>
+                    </div>
+                `;
+                
+                // Insertar mensaje antes del formulario
+                formulario.insertAdjacentHTML('beforebegin', successHTML);
+                
+                // Resetear formulario
                 this.reset();
-                // Resetear contador después de limpiar
                 if (contador) contador.textContent = '0/500';
-            } else {
-                if (data.error && data.error.includes('not activated')) {
-                    alert('❌ Error: Debes verificar tu email en Formspree primero. Revisa tu bandeja de entrada.');
-                } else {
-                    alert('❌ Error al enviar: ' + (data.error || 'Intenta nuevamente.'));
+                
+                // Desplazar al mensaje de éxito
+                const successMsg = document.querySelector('.success-message');
+                if (successMsg) {
+                    successMsg.scrollIntoView({ behavior: 'smooth' });
                 }
+                
+            } else {
+                // Manejar diferentes tipos de errores
+                let errorMessage = 'Error al enviar. Intenta nuevamente.';
+                
+                if (data.error) {
+                    if (data.error.includes('not activated') || data.error.includes('confirm')) {
+                        errorMessage = '❌ Tu email en Formspree no está verificado. Revisa tu bandeja de entrada y haz clic en el enlace de confirmación.';
+                    } else if (data.error.includes('405')) {
+                        errorMessage = '❌ Error 405: Método no permitido. Intenta recargar la página.';
+                    } else {
+                        errorMessage = `❌ Error: ${data.error}`;
+                    }
+                } else if (response.status === 429) {
+                    errorMessage = '❌ Demasiados intentos. Espera unos minutos.';
+                }
+                
+                alert(errorMessage);
             }
         } catch (error) {
-            console.error('Error:', error);
-            alert('❌ Error de conexión. Verifica tu internet.');
+            console.error('Error de red:', error);
+            alert('❌ Error de conexión. Verifica tu internet y vuelve a intentar.');
         } finally {
             // Restaurar botón
+            submitBtn.innerHTML = originalHTML;
             submitBtn.textContent = originalText;
             submitBtn.disabled = false;
         }
     });
+    
+    // Prevenir que el botón de reset elimine los mensajes de error
+    const resetBtn = formulario.querySelector('.reset-button');
+    if (resetBtn) {
+        resetBtn.addEventListener('click', function() {
+            // Limpiar mensajes de error
+            const errorMessages = formulario.querySelectorAll('.error-message');
+            errorMessages.forEach(msg => msg.remove());
+            
+            // Limpiar clases invalid
+            const invalidFields = formulario.querySelectorAll('.invalid');
+            invalidFields.forEach(field => field.classList.remove('invalid'));
+            
+            // Resetear contador
+            if (contador) contador.textContent = '0/500';
+        });
+    }
 </script>
 </body>
 </html>
