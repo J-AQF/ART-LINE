@@ -427,7 +427,7 @@ header{
     border-bottom: 1px solid var(--color-accent);
 }
 
-@media (max-wight: 780px){
+@media (max-width: 780px){
     .footer-section {
         grid-column: 1 / -1;
         text-align: center;
