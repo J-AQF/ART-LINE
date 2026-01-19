@@ -202,7 +202,6 @@
     </footer>
 
     <script>
-         <script>
     // Contador de caracteres para el textarea
     const mensajeTextarea = document.getElementById('mensaje');
     const contador = document.getElementById('contador');
@@ -249,8 +248,15 @@
         
         if (!this.checkValidity()) {
             // Mostrar mensajes de validación nativos del navegador
+            this.reportValidity();  
             return;
         }
+        
+        // Mostrar estado de carga
+        const submitBtn = this.querySelector('.submit-button');
+        const originalText = submitBtn.textContent;
+        submitBtn.textContent = 'Enviando...';
+        submitBtn.disabled = true;
         
         try {
             const response = await fetch(FORMSPREE_ENDPOINT, {
@@ -259,17 +265,28 @@
                 headers: { 'Accept': 'application/json' }
             });
             
+            const data = await response.json();
+            console.log('Respuesta de Formspree:', data);
+            
             if (response.ok) {
-                alert('✅ ¡Mensaje enviado! Revisa tu email.');
+                alert('✅ ¡Mensaje enviado! Revisa tu email para confirmar.');
                 this.reset();
                 // Resetear contador después de limpiar
                 if (contador) contador.textContent = '0/500';
             } else {
-                alert('❌ Error al enviar. Intenta nuevamente.');
+                if (data.error && data.error.includes('not activated')) {
+                    alert('❌ Error: Debes verificar tu email en Formspree primero. Revisa tu bandeja de entrada.');
+                } else {
+                    alert('❌ Error al enviar: ' + (data.error || 'Intenta nuevamente.'));
+                }
             }
         } catch (error) {
             console.error('Error:', error);
             alert('❌ Error de conexión. Verifica tu internet.');
+        } finally {
+            // Restaurar botón
+            submitBtn.textContent = originalText;
+            submitBtn.disabled = false;
         }
     });
 </script>
