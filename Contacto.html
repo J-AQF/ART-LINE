@@ -202,8 +202,57 @@
     </footer>
 
     <script>
-        const FORMSPREE_ENDPOINT = 'https://formspree.io/f/TU-CODIGO-AQUI';
+         <script>
+    // Contador de caracteres para el textarea
+    const mensajeTextarea = document.getElementById('mensaje');
+    const contador = document.getElementById('contador');
+    
+    if (mensajeTextarea && contador) {
+        mensajeTextarea.addEventListener('input', function() {
+            const longitud = this.value.length;
+            contador.textContent = `${longitud}/500`;
             
+            // Cambiar color según la longitud
+            if (longitud > 450) {
+                contador.style.color = 'var(--color-accent)';
+            } else if (longitud < 10) {
+                contador.style.color = '#ff6b6b';
+            } else {
+                contador.style.color = 'var(--color-secondary)';
+            }
+        });
+        
+        // Inicializar contador
+        contador.textContent = `${mensajeTextarea.value.length}/500`;
+    }
+    
+    // Manejo de validación visual
+    const formulario = document.getElementById('formularioContacto');
+    if (formulario) {
+        formulario.addEventListener('invalid', function(e) {
+            e.target.classList.add('invalid');
+        }, true);
+        
+        formulario.addEventListener('input', function(e) {
+            // Remover clase invalid cuando el usuario empiece a escribir
+            if (e.target.classList.contains('invalid')) {
+                e.target.classList.remove('invalid');
+            }
+        });
+    }
+    
+    // Envío del formulario a Formspree
+    const FORMSPREE_ENDPOINT = 'https://formspree.io/f/xkoobger';
+    
+    formulario.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        if (!this.checkValidity()) {
+            // Mostrar mensajes de validación nativos del navegador
+            return;
+        }
+        
+        try {
             const response = await fetch(FORMSPREE_ENDPOINT, {
                 method: 'POST',
                 body: new FormData(this),
@@ -213,52 +262,16 @@
             if (response.ok) {
                 alert('✅ ¡Mensaje enviado! Revisa tu email.');
                 this.reset();
+                // Resetear contador después de limpiar
+                if (contador) contador.textContent = '0/500';
             } else {
                 alert('❌ Error al enviar. Intenta nuevamente.');
             }
-        });
-        const mensajeTextarea = document.getElementById('mensaje');
-        const contador = document.getElementById('contador');
-        
-        if (mensajeTextarea && contador) {
-            mensajeTextarea.addEventListener('input', function() {
-                const longitud = this.value.length;
-                contador.textContent = `${longitud}/500`;
-                
-
-                if (longitud > 450) {
-                    contador.style.color = 'var(--color-accent)';
-                } else if (longitud < 10) {
-                    contador.style.color = '#ff6b6b';
-                } else {
-                    contador.style.color = 'var(--color-secondary)';
-                }
-            });
-            
-
-            contador.textContent = `${mensajeTextarea.value.length}/500`;
+        } catch (error) {
+            console.error('Error:', error);
+            alert('❌ Error de conexión. Verifica tu internet.');
         }
-        
-        const formulario = document.getElementById('formularioContacto');
-        if (formulario) {
-            formulario.addEventListener('invalid', function(e) {
-                e.target.classList.add('invalid');
-            }, true);
-            
-            formulario.addEventListener('input', function(e) {
-
-                if (e.target.classList.contains('invalid')) {
-                    e.target.classList.remove('invalid');
-                }
-            });
-        }
-        
-
-        formulario.addEventListener('submit', function(e) {
-            if (!this.checkValidity()) {
-                e.preventDefault();
-            }
-        });
-    </script>
+    });
+</script>
 </body>
 </html>
